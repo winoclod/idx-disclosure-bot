@@ -352,9 +352,15 @@ Sederhana, efisien, dan real-time! 🚀
         
         # Add PDF links if available
         if disclosure['pdf_link']:
+            # Extract filename from URL for better mobile experience
+            pdf_filename = disclosure['pdf_link'].split('/')[-1] if '/' in disclosure['pdf_link'] else 'dokumen.pdf'
+            
             message += f"""
 🔗 *Lampiran*
-[Lihat Dokumen]({disclosure['pdf_link']})
+[{pdf_filename}]({disclosure['pdf_link']})
+
+📱 *Jika gagal di mobile:*
+Copy link: `{disclosure['pdf_link']}`
 """
         
         return message
