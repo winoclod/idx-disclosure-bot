@@ -34,7 +34,7 @@ class IDXDisclosureScraper:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Accept-Encoding': 'gzip, deflate, br',
+            # Remove Accept-Encoding to let requests handle it automatically
             'Referer': f'{self.base_url}/id/perusahaan-tercatat/keterbukaan-informasi',
             'Origin': self.base_url,
             'Connection': 'keep-alive',
@@ -84,12 +84,18 @@ class IDXDisclosureScraper:
             response = self.session.get(
                 self.api_endpoint,
                 params=params,
-                timeout=15
+                timeout=15,
+                # Force proper encoding handling
+                allow_redirects=True
             )
+            
+            # Ensure content is decompressed
+            response.encoding = 'utf-8'
             
             # Log response details for debugging
             logger.info(f"Response status: {response.status_code}")
             logger.info(f"Response content type: {response.headers.get('content-type', 'unknown')}")
+            logger.info(f"Response encoding: {response.encoding}")
             
             # Check if we got HTML instead of JSON (403 error page)
             if 'text/html' in response.headers.get('content-type', ''):
@@ -99,12 +105,16 @@ class IDXDisclosureScraper:
             
             response.raise_for_status()
             
-            # Parse JSON response
+            # Parse JSON response - response.json() should handle decompression automatically
             try:
                 data = response.json()
             except Exception as e:
                 logger.error(f"Failed to parse JSON: {e}")
-                logger.error(f"Response text: {response.text[:500]}")
+                # Try to log readable text
+                try:
+                    logger.error(f"Response text preview: {response.text[:500]}")
+                except:
+                    logger.error(f"Response bytes preview: {response.content[:100]}")
                 return []
             
             logger.info(f"API Response: ResultCount={data.get('ResultCount', 0)}")
