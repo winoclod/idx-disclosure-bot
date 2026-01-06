@@ -123,46 +123,40 @@ class IDXDisclosureScraper:
         """Parse a single disclosure item from API response"""
         
         try:
-            # Extract fields from API response
-            # Adjust field names based on actual API response structure
-            stock_code = item.get('Kode_Emiten') or item.get('KodeEmiten') or item.get('Code') or 'UNKNOWN'
+            # The actual structure has 'pengumuman' and 'attachments'
+            pengumuman = item.get('pengumuman', {})
+            attachments = item.get('attachments', [])
             
-            title = item.get('Headline') or item.get('Title') or item.get('Judul') or 'No title'
+            # Extract stock code (remove trailing spaces)
+            stock_code = pengumuman.get('Kode_Emiten', 'UNKNOWN').strip()
             
-            # Date field - try multiple possible keys
-            date_str = (
-                item.get('Tanggal_Publikasi') or 
-                item.get('TanggalPublikasi') or 
-                item.get('Date') or 
-                item.get('PublishedDate') or
-                datetime.now().strftime('%d/%m/%Y')
-            )
+            # Extract title
+            title = pengumuman.get('JudulPengumuman', 'No title')
             
-            # Parse date
+            # Extract date
+            date_str = pengumuman.get('TglPengumuman', '')
+            
+            # Parse date from ISO format
             try:
-                # Try different date formats
-                for fmt in ['%d/%m/%Y %H:%M:%S', '%d/%m/%Y', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S']:
-                    try:
-                        date_obj = datetime.strptime(date_str.split('.')[0], fmt)
-                        date = date_obj.strftime('%d-%b-%Y')
-                        break
-                    except:
-                        continue
-                else:
-                    date = date_str
+                date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                date = date_obj.strftime('%d-%b-%Y %H:%M')
             except:
                 date = date_str
             
-            # PDF/Attachment URL
-            attachment = item.get('Attachment') or item.get('File_URL') or item.get('Lampiran')
-            
-            if attachment and not attachment.startswith('http'):
-                pdf_link = f"{self.base_url}{attachment}"
-            else:
-                pdf_link = attachment
+            # Get PDF link from attachments (first non-attachment file)
+            pdf_link = None
+            if attachments:
+                for att in attachments:
+                    if not att.get('IsAttachment', False):
+                        pdf_link = att.get('FullSavePath')
+                        break
+                # If no main file, use first attachment
+                if not pdf_link and attachments:
+                    pdf_link = attachments[0].get('FullSavePath')
             
             # Create unique ID
-            disclosure_id = f"{stock_code}_{date}_{title[:30]}"
+            announcement_no = pengumuman.get('NoPengumuman', '')
+            disclosure_id = f"{stock_code}_{announcement_no}"
             disclosure_id = re.sub(r'[^a-zA-Z0-9_-]', '_', disclosure_id)
             
             # Categorize
