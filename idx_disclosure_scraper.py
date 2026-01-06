@@ -87,10 +87,25 @@ class IDXDisclosureScraper:
                 timeout=15
             )
             
+            # Log response details for debugging
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response content type: {response.headers.get('content-type', 'unknown')}")
+            
+            # Check if we got HTML instead of JSON (403 error page)
+            if 'text/html' in response.headers.get('content-type', ''):
+                logger.error("Received HTML instead of JSON - likely blocked by IDX")
+                logger.error(f"Response preview: {response.text[:200]}")
+                return []
+            
             response.raise_for_status()
             
             # Parse JSON response
-            data = response.json()
+            try:
+                data = response.json()
+            except Exception as e:
+                logger.error(f"Failed to parse JSON: {e}")
+                logger.error(f"Response text: {response.text[:500]}")
+                return []
             
             logger.info(f"API Response: ResultCount={data.get('ResultCount', 0)}")
             
