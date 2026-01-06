@@ -208,17 +208,21 @@ Setiap ada disclosure baru dari emiten manapun di IDX, Anda akan langsung mendap
             await update.message.reply_text("❌ Tidak dapat mengambil data dari IDX.")
             return
         
-        message = "📋 *5 Disclosure Terakhir:*\n\n"
-        
+        # Send each disclosure as separate message with rich format
         for i, disc in enumerate(disclosures[:5], 1):
-            message += f"{i}. *{disc['stock_code']}* - {disc['date']}\n"
-            message += f"   📁 {disc['category']}\n"
-            message += f"   📄 {disc['title'][:60]}...\n"
+            message = f"*{i}. {disc['title']}*\n\n"
+            message += f"📊 *Stock*\n{disc['stock_code']}\n\n"
+            message += f"📅 *Tanggal*\n{disc['date']}\n"
+            
             if disc['pdf_link']:
-                message += f"   🔗 [Lihat Dokumen]({disc['pdf_link']})\n"
-            message += "\n"
-        
-        await update.message.reply_text(message, parse_mode='Markdown', disable_web_page_preview=True)
+                message += f"\n🔗 *Lampiran*\n[Lihat Dokumen]({disc['pdf_link']})\n"
+            
+            await update.message.reply_text(
+                message, 
+                parse_mode='Markdown', 
+                disable_web_page_preview=True
+            )
+            await asyncio.sleep(0.5)  # Small delay between messages
     
     async def stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /stats command - show bot statistics"""
