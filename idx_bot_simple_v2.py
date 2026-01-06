@@ -330,30 +330,28 @@ Sederhana, efisien, dan real-time! 🚀
         logger.info(f"Notified {success_count} subscribers about {disclosure['stock_code']} (failed: {fail_count})")
     
     def format_disclosure_message(self, disclosure: Dict) -> str:
-        """Format disclosure as Telegram message"""
-        # Use emoji based on category
-        category_emoji = {
-            'Financial Report': '📊',
-            'Corporate Action': '📈',
-            'Rights Issue': '💰',
-            'Material Information': 'ℹ️',
-            'Acquisition': '🤝',
-            'Other': '📄'
-        }
+        """Format disclosure as Telegram message - Rich format like Satpam IDX"""
         
-        emoji = category_emoji.get(disclosure['category'], '📄')
+        # Get full title without truncation
+        title = disclosure['title']
+        stock_code = disclosure['stock_code']
         
-        message = f"""
-🔔 *New Disclosure: {disclosure['stock_code']}*
+        # Create rich message format
+        message = f"""*{title}*
 
-{emoji} *{disclosure['category']}*
-📅 {disclosure['date']}
+📊 *Stock*
+{stock_code}
 
-📋 {disclosure['title']}
+📅 *Tanggal*
+{disclosure['date']}
 """
         
+        # Add PDF links if available
         if disclosure['pdf_link']:
-            message += f"\n🔗 [Lihat Dokumen]({disclosure['pdf_link']})"
+            message += f"""
+🔗 *Lampiran*
+[Lihat Dokumen]({disclosure['pdf_link']})
+"""
         
         return message
     
