@@ -350,17 +350,13 @@ Sederhana, efisien, dan real-time! 🚀
 {disclosure['date']}
 """
         
-        # Add PDF links if available
+        # Add PDF links if available - use plain URL to force browser open
         if disclosure['pdf_link']:
-            # Extract filename from URL for better mobile experience
-            pdf_filename = disclosure['pdf_link'].split('/')[-1] if '/' in disclosure['pdf_link'] else 'dokumen.pdf'
-            
             message += f"""
-🔗 *Lampiran*
-[{pdf_filename}]({disclosure['pdf_link']})
+🔗 *Dokumen PDF*
+{disclosure['pdf_link']}
 
-📱 *Jika gagal di mobile:*
-Copy link: `{disclosure['pdf_link']}`
+_Tap link untuk buka di browser_
 """
         
         return message
