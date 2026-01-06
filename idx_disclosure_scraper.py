@@ -29,13 +29,23 @@ class IDXDisclosureScraper:
         # Create a session
         self.session = requests.Session()
         
-        # Realistic browser headers
+        # Very realistic browser headers
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
             'Referer': f'{self.base_url}/id/perusahaan-tercatat/keterbukaan-informasi',
             'Origin': self.base_url,
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
         })
     
     def fetch_disclosures(self, page_size: int = 50) -> List[Dict]:
@@ -49,6 +59,18 @@ class IDXDisclosureScraper:
             List of disclosure dictionaries
         """
         try:
+            # Step 1: Visit homepage first to get cookies and appear more legitimate
+            logger.info("Visiting IDX homepage to get cookies...")
+            try:
+                self.session.get(
+                    f'{self.base_url}/id/perusahaan-tercatat/keterbukaan-informasi',
+                    timeout=10
+                )
+                time.sleep(1)  # Small delay to appear human
+            except:
+                logger.warning("Could not visit homepage, proceeding anyway...")
+            
+            # Step 2: Now fetch disclosures
             logger.info(f"Fetching disclosures from IDX API...")
             
             # API parameters
