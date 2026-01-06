@@ -350,13 +350,13 @@ Sederhana, efisien, dan real-time! 🚀
 {disclosure['date']}
 """
         
-        # Add PDF links if available - use plain URL to force browser open
+        # Add PDF links if available - use Markdown link like /latest command
         if disclosure['pdf_link']:
             message += f"""
 🔗 *Dokumen PDF*
-{disclosure['pdf_link']}
+[Lihat Dokumen]({disclosure['pdf_link']})
 
-_Tap link untuk buka di browser_
+_Tahan link dan pilih open in_
 """
         
         return message
